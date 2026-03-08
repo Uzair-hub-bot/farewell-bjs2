@@ -140,7 +140,47 @@ footer span{color:var(--gold)}
 .footer-links a{color:rgba(255,255,255,.4);text-decoration:none;font-size:.8rem;letter-spacing:1px;text-transform:uppercase;transition:.2s}
 .footer-links a:hover{color:var(--gold)}
 
-/* ── ADMIN SYSTEM ── */
+/* ── VIDEO PLAYER MODAL ── */
+#videoModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.95);z-index:9999;flex-direction:column;align-items:center;justify-content:center;padding:20px}
+#videoModal.show{display:flex}
+.vm-inner{position:relative;width:90vw;max-width:900px}
+.vm-close{position:absolute;top:-44px;right:0;background:none;border:none;color:#fff;font-size:2rem;cursor:pointer;z-index:10}
+.vm-title{color:var(--gold);font-family:'Playfair Display',serif;font-size:1.1rem;margin-bottom:14px;text-align:center;letter-spacing:1px}
+.vm-frame{width:100%;aspect-ratio:16/9;border-radius:14px;border:3px solid var(--gold);background:#000;overflow:hidden}
+.vm-frame video{width:100%;height:100%;object-fit:contain}
+.vm-frame iframe{width:100%;height:100%;border:none}
+
+/* Add Video Modal */
+#addVideoModal{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);z-index:99000;align-items:center;justify-content:center;backdrop-filter:blur(8px)}
+#addVideoModal.show{display:flex}
+.av-box{background:linear-gradient(135deg,var(--deep),var(--accent));border:2px solid var(--gold);border-radius:20px;padding:36px;max-width:460px;width:92%;text-align:center}
+.av-box h3{font-family:'Playfair Display',serif;color:var(--gold);font-size:1.3rem;margin-bottom:6px}
+.av-box p{color:rgba(255,255,255,.6);font-size:.83rem;margin-bottom:22px}
+.av-tabs{display:flex;gap:8px;margin-bottom:20px;background:rgba(255,255,255,.06);border-radius:10px;padding:4px}
+.av-tab{flex:1;padding:10px;border-radius:8px;border:none;background:transparent;color:rgba(255,255,255,.5);font-size:.82rem;font-weight:600;letter-spacing:1px;cursor:pointer;text-transform:uppercase;transition:.2s}
+.av-tab.active{background:var(--gold);color:var(--deep)}
+.av-input{width:100%;padding:13px 16px;border-radius:10px;border:2px solid rgba(201,168,76,.3);background:rgba(255,255,255,.07);color:#fff;font-size:.9rem;outline:none;transition:.2s;margin-bottom:10px;box-sizing:border-box}
+.av-input:focus{border-color:var(--gold)}
+.av-input::placeholder{color:rgba(255,255,255,.3)}
+.av-upload-area{border:2px dashed rgba(201,168,76,.4);border-radius:12px;padding:28px;cursor:pointer;margin-bottom:10px;transition:.2s}
+.av-upload-area:hover{border-color:var(--gold);background:rgba(201,168,76,.07)}
+.av-upload-area p{color:rgba(255,255,255,.5);font-size:.85rem;margin-bottom:6px}
+.av-upload-area span{color:var(--gold);font-size:.75rem}
+#avFileInput{display:none}
+#avFileName{color:var(--gold);font-size:.8rem;margin-bottom:10px;min-height:18px}
+.av-err{color:#ff6b6b;font-size:.78rem;min-height:18px;margin-bottom:8px}
+.av-btns{display:flex;gap:10px;margin-top:6px}
+.av-btn{flex:1;padding:12px;border-radius:10px;border:none;font-weight:700;font-size:.82rem;letter-spacing:1px;cursor:pointer;transition:.2s;text-transform:uppercase}
+.av-btn.add{background:var(--gold);color:var(--deep)}
+.av-btn.add:hover{background:#e8c76d}
+.av-btn.cancel{background:rgba(255,255,255,.08);color:#fff;border:1px solid rgba(255,255,255,.2)}
+.av-btn.cancel:hover{background:rgba(255,255,255,.15)}
+
+/* Video card clickable thumb */
+.video-card .video-thumb{cursor:pointer}
+.video-card .video-thumb video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.7}
+.video-card .video-thumb{position:relative}
+
 #adminBtn{position:fixed;bottom:28px;right:28px;z-index:9000;background:linear-gradient(135deg,var(--deep),var(--accent));border:2px solid var(--gold);color:var(--gold);padding:12px 20px;border-radius:50px;font-size:.8rem;font-weight:700;letter-spacing:2px;text-transform:uppercase;cursor:pointer;box-shadow:0 4px 20px rgba(0,0,0,.4);transition:.3s;display:flex;align-items:center;gap:8px}
 #adminBtn:hover{background:var(--gold);color:var(--deep);transform:translateY(-2px)}
 #adminBtn.active{background:linear-gradient(135deg,#8b0000,#c0392b);border-color:#ff6b6b;color:#fff}
@@ -1243,9 +1283,9 @@ body.edit-mode .video-card{position:relative}
   </div>
   <div class="videos-grid">
 
-    <div class="video-card" data-type="video" data-id="video-1">
-      <button class="del-btn" onclick="confirmDelete(this)" title="Delete">✕</button>>
-      <div class="video-thumb">
+    <div class="video-card" data-type="video" data-id="video-1" data-src="" data-ytid="">
+      <button class="del-btn" onclick="confirmDelete(this)" title="Delete">✕</button>
+      <div class="video-thumb" onclick="playVideo(this.closest('.video-card'))">
         <div class="play-btn">▶</div>
         <div style="position:absolute;top:12px;left:12px;background:var(--gold);color:var(--deep);font-size:.65rem;font-weight:700;padding:3px 10px;border-radius:50px;letter-spacing:1px;text-transform:uppercase">Highlight</div>
       </div>
@@ -1255,9 +1295,9 @@ body.edit-mode .video-card{position:relative}
       </div>
     </div>
 
-    <div class="video-card" data-type="video" data-id="video-2">
-      <button class="del-btn" onclick="confirmDelete(this)" title="Delete">✕</button>>
-      <div class="video-thumb" style="background:linear-gradient(135deg,#1a3a6e,#0f3460)">
+    <div class="video-card" data-type="video" data-id="video-2" data-src="" data-ytid="">
+      <button class="del-btn" onclick="confirmDelete(this)" title="Delete">✕</button>
+      <div class="video-thumb" style="background:linear-gradient(135deg,#1a3a6e,#0f3460)" onclick="playVideo(this.closest('.video-card'))">
         <div class="play-btn">▶</div>
       </div>
       <div class="video-label">
@@ -1266,9 +1306,9 @@ body.edit-mode .video-card{position:relative}
       </div>
     </div>
 
-    <div class="video-card" data-type="video" data-id="video-3">
-      <button class="del-btn" onclick="confirmDelete(this)" title="Delete">✕</button>>
-      <div class="video-thumb" style="background:linear-gradient(135deg,#2d1a5e,#1a1a2e)">
+    <div class="video-card" data-type="video" data-id="video-3" data-src="" data-ytid="">
+      <button class="del-btn" onclick="confirmDelete(this)" title="Delete">✕</button>
+      <div class="video-thumb" style="background:linear-gradient(135deg,#2d1a5e,#1a1a2e)" onclick="playVideo(this.closest('.video-card'))">
         <div class="play-btn">▶</div>
       </div>
       <div class="video-label">
@@ -1277,9 +1317,9 @@ body.edit-mode .video-card{position:relative}
       </div>
     </div>
 
-    <div class="video-card" data-type="video" data-id="video-4">
-      <button class="del-btn" onclick="confirmDelete(this)" title="Delete">✕</button>>
-      <div class="video-thumb" style="background:linear-gradient(135deg,#1a3d2e,#0f3460)">
+    <div class="video-card" data-type="video" data-id="video-4" data-src="" data-ytid="">
+      <button class="del-btn" onclick="confirmDelete(this)" title="Delete">✕</button>
+      <div class="video-thumb" style="background:linear-gradient(135deg,#1a3d2e,#0f3460)" onclick="playVideo(this.closest('.video-card'))">
         <div class="play-btn">▶</div>
       </div>
       <div class="video-label">
@@ -1288,29 +1328,17 @@ body.edit-mode .video-card{position:relative}
       </div>
     </div>
 
-    <div class="video-card add-media">
-      <div class="video-thumb" style="background:transparent;border:none">
+    <!-- ADD VIDEO CARD — always visible -->
+    <div class="video-card add-media" onclick="openAddVideo()" style="cursor:pointer">
+      <div class="video-thumb" style="background:rgba(201,168,76,.05);border:none">
         <div style="text-align:center;color:#ccc">
-          <p style="font-size:2.5rem;margin-bottom:8px">🎬</p>
-          <p style="font-size:.8rem;letter-spacing:1px;text-transform:uppercase">Add a Video</p>
+          <p style="font-size:2.8rem;margin-bottom:8px">🎬</p>
+          <p style="font-size:.78rem;letter-spacing:1px;text-transform:uppercase;color:var(--gold)">Add Video / YouTube</p>
         </div>
       </div>
       <div class="video-label">
         <p class="video-title" style="color:#bbb">Upload Your Memory</p>
-        <p class="video-sub" data-editable contenteditable="false">Click to add a video</p>
-      </div>
-    </div>
-
-    <div class="video-card add-media">
-      <div class="video-thumb" style="background:transparent;border:none">
-        <div style="text-align:center;color:#ccc">
-          <p style="font-size:2.5rem;margin-bottom:8px">📸</p>
-          <p style="font-size:.8rem;letter-spacing:1px;text-transform:uppercase">Add a Photo</p>
-        </div>
-      </div>
-      <div class="video-label">
-        <p class="video-title" style="color:#bbb">Photo Memory</p>
-        <p class="video-sub" data-editable contenteditable="false">Click to add a photo</p>
+        <p class="video-sub" style="color:#999">Paste YouTube link or upload file</p>
       </div>
     </div>
 
@@ -1329,6 +1357,49 @@ body.edit-mode .video-card{position:relative}
   </ul>
   <p style="margin-top:10px">Made with ❤️ for <span>Class of 2025</span> · All Rights Reserved · <span>British International School System</span></p>
 </footer>
+
+<!-- ══════════════ VIDEO PLAYER MODAL ══════════════ -->
+<div id="videoModal">
+  <div class="vm-inner">
+    <button class="vm-close" onclick="closeVideoModal()">✕</button>
+    <p class="vm-title" id="vmTitle"></p>
+    <div class="vm-frame" id="vmFrame"></div>
+  </div>
+</div>
+
+<!-- ══════════════ ADD VIDEO MODAL ══════════════ -->
+<div id="addVideoModal">
+  <div class="av-box">
+    <h3>🎬 Add a Video</h3>
+    <p>Paste a YouTube link or upload a video file from your device</p>
+    <div class="av-tabs">
+      <button class="av-tab active" onclick="switchAvTab('yt',this)">▶ YouTube Link</button>
+      <button class="av-tab" onclick="switchAvTab('file',this)">📁 Upload File</button>
+    </div>
+    <!-- YouTube tab -->
+    <div id="avYtTab">
+      <input class="av-input" id="avYtUrl" placeholder="https://www.youtube.com/watch?v=...">
+      <input class="av-input" id="avYtTitle" placeholder="Video title (e.g. Graduation Night 2025)">
+      <input class="av-input" id="avYtSub" placeholder="Short description (optional)">
+    </div>
+    <!-- File upload tab -->
+    <div id="avFileTab" style="display:none">
+      <div class="av-upload-area" onclick="document.getElementById('avFileInput').click()">
+        <p>🎬 Click to choose a video file</p>
+        <span>MP4, MOV, WebM supported</span>
+      </div>
+      <input type="file" id="avFileInput" accept="video/*" onchange="handleAvFile(this)">
+      <div id="avFileName"></div>
+      <input class="av-input" id="avFileTitle" placeholder="Video title">
+      <input class="av-input" id="avFileSub" placeholder="Short description (optional)">
+    </div>
+    <div class="av-err" id="avErr"></div>
+    <div class="av-btns">
+      <button class="av-btn cancel" onclick="closeAddVideo()">Cancel</button>
+      <button class="av-btn add" onclick="submitAddVideo()">+ Add Video</button>
+    </div>
+  </div>
+</div>
 
 <!-- ══════════════ ADMIN BUTTON ══════════════ -->
 <button id="adminBtn" onclick="openAdminLogin()">🔐 Admin</button>
@@ -1376,7 +1447,7 @@ body.edit-mode .video-card{position:relative}
 // ⚙️  SUPABASE CONFIG — Fill these in after creating your project
 // ═══════════════════════════════════════════════════════════════════════════
 const SUPABASE_URL  = 'https://qvmxatwexlgoqfavuhdy.supabase.co';  // ← STEP 6
-const SUPABASE_KEY  = 'https://qvmxatwexlgoqfavuhdy.supabase.co';                 // ← STEP 6
+const SUPABASE_KEY  = 'sb_publishable_tGMIIW5OOI8lydhtm8ckGQ_4EeDYfgr';                 // ← STEP 6
 const ADMIN_PASSWORD = 'admin2025';                            // ← Change this!
 
 // Helper: call Supabase REST API
@@ -1963,6 +2034,167 @@ function showToast(msg, color = '#1a3a6e') {
 
 // Load Supabase data when page opens
 document.addEventListener('DOMContentLoaded', loadFromSupabase);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// 🎬 VIDEO PLAYER
+// ═══════════════════════════════════════════════════════════════════════════
+let currentVideoObjectUrl = null;
+
+function playVideo(card) {
+  const ytId   = card.dataset.ytid;
+  const src    = card.dataset.src;
+  const title  = card.querySelector('.video-title')?.textContent || '';
+  const frame  = document.getElementById('vmFrame');
+  const modal  = document.getElementById('videoModal');
+
+  if (!ytId && !src) {
+    showToast('⚠️ No video attached yet — add one via the + card below', '#8b6914');
+    return;
+  }
+
+  document.getElementById('vmTitle').textContent = title;
+  frame.innerHTML = '';
+
+  if (ytId) {
+    const iframe = document.createElement('iframe');
+    iframe.src = `https://www.youtube.com/embed/${ytId}?autoplay=1`;
+    iframe.allow = 'autoplay; encrypted-media';
+    iframe.allowFullscreen = true;
+    frame.appendChild(iframe);
+  } else if (src) {
+    const video = document.createElement('video');
+    video.src = src;
+    video.controls = true;
+    video.autoplay = true;
+    frame.appendChild(video);
+  }
+
+  modal.classList.add('show');
+}
+
+function closeVideoModal() {
+  const modal = document.getElementById('videoModal');
+  modal.classList.remove('show');
+  document.getElementById('vmFrame').innerHTML = ''; // stop video
+}
+
+document.getElementById('videoModal').addEventListener('click', function(e) {
+  if (e.target === this) closeVideoModal();
+});
+
+// ═══════════════════════════════════════════════════════════════════════════
+// ➕ ADD VIDEO MODAL
+// ═══════════════════════════════════════════════════════════════════════════
+let avMode = 'yt';
+let avFileDataUrl = '';
+let videoCounter = 5; // starts after existing 4
+
+function openAddVideo() {
+  document.getElementById('addVideoModal').classList.add('show');
+  document.getElementById('avErr').textContent = '';
+  document.getElementById('avYtUrl').value = '';
+  document.getElementById('avYtTitle').value = '';
+  document.getElementById('avYtSub').value = '';
+  document.getElementById('avFileTitle').value = '';
+  document.getElementById('avFileSub').value = '';
+  document.getElementById('avFileName').textContent = '';
+  avFileDataUrl = '';
+}
+
+function closeAddVideo() {
+  document.getElementById('addVideoModal').classList.remove('show');
+}
+
+function switchAvTab(mode, btn) {
+  avMode = mode;
+  document.querySelectorAll('.av-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('avYtTab').style.display  = mode === 'yt'   ? '' : 'none';
+  document.getElementById('avFileTab').style.display = mode === 'file' ? '' : 'none';
+}
+
+function handleAvFile(input) {
+  const file = input.files[0];
+  if (!file) return;
+  document.getElementById('avFileName').textContent = '📎 ' + file.name;
+  const reader = new FileReader();
+  reader.onload = e => { avFileDataUrl = e.target.result; };
+  reader.readAsDataURL(file);
+}
+
+function extractYouTubeId(url) {
+  const patterns = [
+    /(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/)([a-zA-Z0-9_-]{11})/,
+    /youtube\.com\/shorts\/([a-zA-Z0-9_-]{11})/
+  ];
+  for (const p of patterns) {
+    const m = url.match(p);
+    if (m) return m[1];
+  }
+  return null;
+}
+
+function submitAddVideo() {
+  const errEl = document.getElementById('avErr');
+  errEl.textContent = '';
+  let ytId = '', src = '', title = '', sub = '';
+
+  if (avMode === 'yt') {
+    const url = document.getElementById('avYtUrl').value.trim();
+    title = document.getElementById('avYtTitle').value.trim() || 'Memory Video';
+    sub   = document.getElementById('avYtSub').value.trim()   || 'Class of 2025';
+    if (!url) { errEl.textContent = '❌ Please paste a YouTube link'; return; }
+    ytId = extractYouTubeId(url);
+    if (!ytId) { errEl.textContent = '❌ Invalid YouTube URL — please check and try again'; return; }
+  } else {
+    if (!avFileDataUrl) { errEl.textContent = '❌ Please choose a video file first'; return; }
+    title = document.getElementById('avFileTitle').value.trim() || 'Memory Video';
+    sub   = document.getElementById('avFileSub').value.trim()   || 'Class of 2025';
+    src   = avFileDataUrl;
+  }
+
+  // Build the new card
+  const grid = document.querySelector('.videos-grid');
+  const addCard = grid.querySelector('.add-media');
+  const id = 'video-' + (videoCounter++);
+  const thumbBg = ytId
+    ? `style="background:url(https://img.youtube.com/vi/${ytId}/hqdefault.jpg) center/cover no-repeat"`
+    : '';
+
+  const card = document.createElement('div');
+  card.className = 'video-card';
+  card.dataset.type  = 'video';
+  card.dataset.id    = id;
+  card.dataset.ytid  = ytId;
+  card.dataset.src   = src ? 'local' : '';
+  if (src) card._localSrc = src; // keep blob in memory
+  card.innerHTML = `
+    <button class="del-btn" onclick="confirmDelete(this)" title="Delete">✕</button>
+    <div class="video-thumb" ${thumbBg} onclick="playVideoFromCard(this.closest('.video-card'))">
+      <div class="play-btn">▶</div>
+    </div>
+    <div class="video-label">
+      <p class="video-title" data-editable ${isEditMode ? 'contenteditable="true"' : 'contenteditable="false"'}>${title}</p>
+      <p class="video-sub"  data-editable ${isEditMode ? 'contenteditable="true"' : 'contenteditable="false"'}>${sub}</p>
+    </div>`;
+
+  // store local src reference
+  if (src) card._localSrc = src;
+
+  grid.insertBefore(card, addCard);
+  closeAddVideo();
+  showToast('✅ Video added!', '#1a6b3a');
+}
+
+// allow local-src videos added dynamically
+function playVideoFromCard(card) {
+  if (card._localSrc) card.dataset.src = card._localSrc;
+  playVideo(card);
+}
+
+document.getElementById('addVideoModal').addEventListener('click', function(e) {
+  if (e.target === this) closeAddVideo();
+});
 
 // Close modals on backdrop click
 document.getElementById('pwModal').addEventListener('click', function(e) {
