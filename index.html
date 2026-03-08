@@ -1446,8 +1446,8 @@ body.edit-mode .video-card{position:relative}
 // ═══════════════════════════════════════════════════════════════════════════
 // ⚙️  SUPABASE CONFIG — Fill these in after creating your project
 // ═══════════════════════════════════════════════════════════════════════════
-const SUPABASE_URL  = 'https://qvmxatwexlgoqfavuhdy.supabase.co';  // ← STEP 6
-const SUPABASE_KEY  = 'sb_publishable_tGMIIW5OOI8lydhtm8ckGQ_4EeDYfgr';                 // ← STEP 6
+const SUPABASE_URL  = 'https://YOUR_PROJECT_ID.supabase.co';  // ← STEP 6
+const SUPABASE_KEY  = 'YOUR_ANON_PUBLIC_KEY';                 // ← STEP 6
 const ADMIN_PASSWORD = 'admin2025';                            // ← Change this!
 
 // Helper: call Supabase REST API
@@ -1832,7 +1832,7 @@ function exitEditMode() {
 // 💾 SAVE TO SUPABASE
 // ═══════════════════════════════════════════════════════════════════════════
 async function saveAllToSupabase() {
-  if (!SUPABASE_URL.includes('supabase.co') || SUPABASE_URL.includes('YOUR_PROJECT')) {
+  if (!SUPABASE_URL.includes('supabase.co') || SUPABASE_URL.includes('YOUR_PROJECT_ID')) {
     showToast('⚠️ Please set your Supabase URL & Key in the config section first!', '#8b6914');
     return;
   }
@@ -1842,73 +1842,86 @@ async function saveAllToSupabase() {
   btn.disabled = true;
 
   try {
-    // Collect student data
-    const studentCards = document.querySelectorAll('.student-card[data-id]');
+    // ── Collect student data with exact column names ──────────────────────
     const students = [];
-    studentCards.forEach(card => {
-      const rows = card.querySelectorAll('.info-row');
-      const data = { id: card.dataset.id };
-      const name = card.querySelector('.student-name');
-      const roll = card.querySelector('.student-roll');
-      if (name) data.name = name.textContent.trim();
-      if (roll) data.roll = roll.textContent.trim();
-      rows.forEach(row => {
-        const lbl = row.querySelector('.info-label');
-        const val = row.querySelector('.info-val');
-        if (lbl && val) data[lbl.textContent.trim().toLowerCase().replace(/\s+/g,'_')] = val.textContent.trim();
+    document.querySelectorAll('.student-card[data-id]').forEach((card, idx) => {
+      const getText = sel => (card.querySelector(sel)?.textContent || '').trim();
+      // Map each info-label to a fixed column name
+      const rowMap = {};
+      card.querySelectorAll('.info-row').forEach(row => {
+        const lbl = (row.querySelector('.info-label')?.textContent || '').trim().toLowerCase();
+        const val = (row.querySelector('.info-val')?.textContent   || '').trim();
+        rowMap[lbl] = val;
       });
-      students.push(data);
+      students.push({
+        id:           card.dataset.id,
+        name:         getText('.student-name'),
+        roll:         getText('.student-roll'),
+        age:          rowMap['age']            || '',
+        fathers_name: rowMap["father's name"]  || '',
+        address:      rowMap['address']        || '',
+        phone:        rowMap['phone']          || '',
+        weight:       rowMap['weight']         || '',
+        hobby:        rowMap['hobby']          || '',
+        career_goal:  rowMap['career goal']    || '',
+        fav_teacher:  getText('.fav-teacher div p:last-child')
+      });
     });
 
-    // Collect teacher data
-    const teacherCards = document.querySelectorAll('.teacher-card[data-id]');
+    // ── Collect teacher data with exact column names ──────────────────────
     const teachers = [];
-    teacherCards.forEach(card => {
-      const data = { id: card.dataset.id };
-      const name = card.querySelector('.teacher-name');
-      const subj = card.querySelector('.teacher-subject');
-      const quote = card.querySelector('.teacher-quote');
-      if (name) data.name = name.textContent.trim();
-      if (subj) data.subject = subj.textContent.trim();
-      if (quote) data.quote = quote.textContent.trim();
-      const infoVals = card.querySelectorAll('.t-info');
-      infoVals.forEach(info => {
-        const lbl = info.querySelector('.t-info-lbl');
-        const val = info.querySelector('.t-info-val');
-        if (lbl && val) data[lbl.textContent.trim().toLowerCase()] = val.textContent.trim();
+    document.querySelectorAll('.teacher-card[data-id]').forEach((card) => {
+      const getText = sel => (card.querySelector(sel)?.textContent || '').trim();
+      const infoMap = {};
+      card.querySelectorAll('.t-info').forEach(info => {
+        const lbl = (info.querySelector('.t-info-lbl')?.textContent || '').trim().toLowerCase();
+        const val = (info.querySelector('.t-info-val')?.textContent || '').trim();
+        infoMap[lbl] = val;
       });
-      teachers.push(data);
+      teachers.push({
+        id:            card.dataset.id,
+        name:          getText('.teacher-name'),
+        subject:       getText('.teacher-subject'),
+        quote:         getText('.teacher-quote'),
+        degree:        getText('.teacher-degree'),
+        age:           infoMap['age']           || '',
+        address:       infoMap['address']       || '',
+        phone:         infoMap['phone']         || '',
+        qualification: infoMap['qualification'] || ''
+      });
     });
 
-    // Save students
-    const sRes = await fetch(`${SUPABASE_URL}/rest/v1/students`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates'
-      },
-      body: JSON.stringify(students)
-    });
+    // ── Upsert using ON CONFLICT DO UPDATE (merge-duplicates) ─────────────
+    const headers = {
+      'apikey':        SUPABASE_KEY,
+      'Authorization': 'Bearer ' + SUPABASE_KEY,
+      'Content-Type':  'application/json',
+      'Prefer':        'return=minimal,resolution=merge-duplicates'
+    };
 
-    // Save teachers
-    const tRes = await fetch(`${SUPABASE_URL}/rest/v1/teachers`, {
-      method: 'POST',
-      headers: {
-        'apikey': SUPABASE_KEY,
-        'Authorization': `Bearer ${SUPABASE_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'resolution=merge-duplicates'
-      },
-      body: JSON.stringify(teachers)
-    });
+    const [sRes, tRes] = await Promise.all([
+      fetch(`${SUPABASE_URL}/rest/v1/students`, {
+        method: 'POST', headers, body: JSON.stringify(students)
+      }),
+      fetch(`${SUPABASE_URL}/rest/v1/teachers`, {
+        method: 'POST', headers, body: JSON.stringify(teachers)
+      })
+    ]);
 
-    if (sRes.ok && tRes.ok) {
-      showToast('✅ All changes saved to Supabase!', '#1a6b3a');
-    } else {
-      throw new Error(`Students: ${sRes.status}, Teachers: ${tRes.status}`);
+    // Read error body if failed
+    let errMsg = '';
+    if (!sRes.ok) {
+      const body = await sRes.json().catch(() => ({}));
+      errMsg += `Students: ${body.message || body.hint || sRes.status}. `;
     }
+    if (!tRes.ok) {
+      const body = await tRes.json().catch(() => ({}));
+      errMsg += `Teachers: ${body.message || body.hint || tRes.status}.`;
+    }
+
+    if (errMsg) throw new Error(errMsg);
+
+    showToast('✅ All changes saved to Supabase!', '#1a6b3a');
 
   } catch (err) {
     console.error('Supabase save error:', err);
